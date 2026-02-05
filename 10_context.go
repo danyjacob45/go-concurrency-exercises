@@ -21,6 +21,14 @@ import (
 // - ctx.Err() - returns why context was cancelled (Canceled or DeadlineExceeded)
 // - Cancellation propagates from parent to children, not vice versa
 //
+// GO 1.20+ ADDITIONS:
+// - context.WithCancelCause(parent) - cancel with a custom error cause
+// - context.Cause(ctx) - retrieve the cause passed to cancel
+//
+// GO 1.21+ ADDITIONS:
+// - context.WithoutCancel(parent) - derive context that ignores parent cancellation
+// - context.AfterFunc(ctx, f) - run f when context is cancelled
+//
 // =============================================================================
 
 // =============================================================================

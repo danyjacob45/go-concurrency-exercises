@@ -20,7 +20,8 @@ import (
 // - g.Go(func() error) - launch a goroutine
 // - g.Wait() - wait for all goroutines, return first error
 // - errgroup.WithContext() - creates group with cancellation
-// - g.SetLimit(n) - limit concurrent goroutines (Go 1.21+)
+// - g.SetLimit(n) - limit concurrent goroutines (Go 1.20+)
+// - g.TryGo(func() error) - non-blocking Go, returns false if at limit (Go 1.20+)
 // - Context is cancelled when first error occurs
 //
 // =============================================================================

@@ -19,6 +19,11 @@ import (
 // - Cond.Broadcast() wakes ALL waiting goroutines
 // - ALWAYS check condition in a loop after Wait() returns!
 //
+// GO 1.21+ ADDITIONS:
+// - sync.OnceFunc(f) returns a function that calls f once (handles panics better)
+// - sync.OnceValue[T](f) returns a function that calls f once and returns value
+// - sync.OnceValues[T1,T2](f) returns a function that returns two values
+//
 // =============================================================================
 
 // =============================================================================
@@ -73,6 +78,9 @@ type Config struct {
 // - Get() is non-blocking
 //
 // QUESTION: What happens if the loader function panics?
+// ANSWER: sync.Once records that Do was called even if f panics! Subsequent
+// calls to Do will NOT retry the function. If initialization can fail, you
+// may need sync.OnceFunc (Go 1.21+) or a custom pattern with OnceValue/OnceValues.
 type ConfigLoader struct {
 	// YOUR FIELDS HERE
 }

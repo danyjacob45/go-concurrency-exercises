@@ -140,12 +140,23 @@ func (c *SafeCounter) Value() int {
 // =============================================================================
 
 // RaceLoopVar demonstrates the classic loop variable capture bug.
+//
+// IMPORTANT GO VERSION NOTE:
+// - Go 1.21 and earlier: Loop variable 'i' is shared across iterations.
+//   All goroutines capture the SAME variable, usually seeing the final value (5).
+// - Go 1.22+: Each iteration creates a NEW loop variable.
+//   This bug is now FIXED at the language level for for-range loops!
+//
+// This exercise still demonstrates the concept, but if you're using Go 1.22+,
+// you may not see the bug. The fix patterns shown below are still useful for
+// understanding and for code that must work with older Go versions.
+//
 // QUESTION: What values get printed? Why?
 func RaceLoopVar() []int {
 	var results []int
 	for i := 0; i < 5; i++ {
 		go func() {
-			results = append(results, i) // Captures 'i' by reference!
+			results = append(results, i) // Go <1.22: Captures 'i' by reference!
 		}()
 	}
 	// time.Sleep(100 * time.Millisecond)

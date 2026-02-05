@@ -162,8 +162,16 @@ func GenerateWithLimit(ctx context.Context, values []int, maxCount int) <-chan i
 // PART 5: Leak from Timer/Ticker
 // =============================================================================
 
-// LeakyTimer creates a timer that leaks if not consumed.
-// time.After creates a channel that holds a reference until it fires.
+// LeakyTimer demonstrates resource waste with time.After.
+//
+// CLARIFICATION: time.After doesn't actually create a goroutine that leaks
+// forever. It creates an internal timer that will fire after the duration,
+// then be garbage collected. However:
+// 1. The timer resources (memory, runtime timer) aren't freed until it fires
+// 2. In hot loops, this can create thousands of pending timers
+// 3. This is resource waste, not a permanent leak
+//
+// Use time.NewTimer with explicit Stop() for better resource management.
 func LeakyTimer() string {
 	ch := make(chan string)
 
@@ -178,8 +186,8 @@ func LeakyTimer() string {
 		return result
 	case <-time.After(100 * time.Millisecond):
 		return "timeout"
-		// LEAK: the timer goroutine still exists!
-		// (In practice, small leak, cleans up when timer fires)
+		// RESOURCE WASTE: timer resources held until it would have fired
+		// In loops, this accumulates. Use time.NewTimer + Stop() instead.
 	}
 }
 

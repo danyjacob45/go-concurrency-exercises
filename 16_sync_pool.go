@@ -114,17 +114,17 @@ type SyncPoolStats struct {
 	Puts   int64
 }
 
-func NewTrackedPool(newFunc func() interface{}) *TrackedPool {
+func NewTrackedPool(newFunc func() any) *TrackedPool {
 	// YOUR CODE HERE
 	return nil
 }
 
-func (tp *TrackedPool) Get() interface{} {
+func (tp *TrackedPool) Get() any {
 	// YOUR CODE HERE
 	return nil
 }
 
-func (tp *TrackedPool) Put(x interface{}) {
+func (tp *TrackedPool) Put(x any) {
 	// YOUR CODE HERE
 }
 

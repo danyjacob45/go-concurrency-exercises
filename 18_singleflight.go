@@ -32,10 +32,10 @@ import (
 
 // call represents an in-flight or completed call.
 type call struct {
-	wg    sync.WaitGroup
-	val   interface{}
-	err   error
-	done  bool
+	wg   sync.WaitGroup
+	val  any
+	err  error
+	done bool
 }
 
 // SingleFlight deduplicates function calls.
@@ -57,7 +57,7 @@ func NewSingleFlight() *SingleFlight {
 
 // Do executes fn only if no other execution for key is in-flight.
 // Returns (result, error, shared) where shared=true if result was shared.
-func (sf *SingleFlight) Do(key string, fn func() (interface{}, error)) (interface{}, error, bool) {
+func (sf *SingleFlight) Do(key string, fn func() (any, error)) (any, error, bool) {
 	// YOUR CODE HERE
 	return nil, nil, false
 }
@@ -73,7 +73,7 @@ func (sf *SingleFlight) Forget(key string) {
 
 // SingleFlightResult holds the result of a DoChan call.
 type SingleFlightResult struct {
-	Val    interface{}
+	Val    any
 	Err    error
 	Shared bool
 }
@@ -85,7 +85,7 @@ type SingleFlightResult struct {
 // 1. Return channel immediately
 // 2. Execute fn (with deduplication)
 // 3. Send result on channel when done
-func (sf *SingleFlight) DoChan(key string, fn func() (interface{}, error)) <-chan SingleFlightResult {
+func (sf *SingleFlight) DoChan(key string, fn func() (any, error)) <-chan SingleFlightResult {
 	// YOUR CODE HERE
 	return nil
 }
@@ -146,7 +146,7 @@ func (cf *CachedFetcher) FetchCount() int {
 // 3. But don't cancel the underlying operation (let it complete for others)
 //
 // QUESTION: Should timeout cancel the operation or just stop waiting?
-func (sf *SingleFlight) DoWithTimeout(key string, fn func() (interface{}, error), timeout time.Duration) (interface{}, error, bool) {
+func (sf *SingleFlight) DoWithTimeout(key string, fn func() (any, error), timeout time.Duration) (any, error, bool) {
 	// YOUR CODE HERE
 	return nil, nil, false
 }
@@ -157,7 +157,7 @@ func (sf *SingleFlight) DoWithTimeout(key string, fn func() (interface{}, error)
 // 1. Use singleflight for deduplication
 // 2. Return early if context is cancelled
 // 3. Let underlying operation complete for other waiters
-func (sf *SingleFlight) DoWithContext(ctx context.Context, key string, fn func() (interface{}, error)) (interface{}, error, bool) {
+func (sf *SingleFlight) DoWithContext(ctx context.Context, key string, fn func() (any, error)) (any, error, bool) {
 	// YOUR CODE HERE
 	return nil, nil, false
 }
@@ -175,7 +175,7 @@ func (sf *SingleFlight) DoWithContext(ctx context.Context, key string, fn func()
 // 1. Check if call is in-flight
 // 2. If so, forget the key and start new
 // 3. This caller gets fresh result, others get old one
-func (sf *SingleFlight) DoFresh(key string, fn func() (interface{}, error)) (interface{}, error) {
+func (sf *SingleFlight) DoFresh(key string, fn func() (any, error)) (any, error) {
 	// YOUR CODE HERE
 	return nil, nil
 }
@@ -194,7 +194,7 @@ type RequestCoalescer struct {
 }
 
 type BatchResult struct {
-	Results map[string]interface{}
+	Results map[string]any
 	Err     error
 }
 
@@ -204,13 +204,13 @@ type BatchResult struct {
 // 1. Collect requests within window duration
 // 2. After window, call batchFn with all collected keys
 // 3. Distribute results back to callers
-func NewRequestCoalescer(window time.Duration, batchFn func(keys []string) (map[string]interface{}, error)) *RequestCoalescer {
+func NewRequestCoalescer(window time.Duration, batchFn func(keys []string) (map[string]any, error)) *RequestCoalescer {
 	// YOUR CODE HERE
 	return nil
 }
 
 // Get requests a value, may be batched with other requests.
-func (rc *RequestCoalescer) Get(key string) (interface{}, error) {
+func (rc *RequestCoalescer) Get(key string) (any, error) {
 	// YOUR CODE HERE
 	return nil, nil
 }

@@ -17,7 +17,10 @@ import (
 // - atomic.StoreInt64(&x, n) atomically writes n to x
 // - atomic.CompareAndSwapInt64(&x, old, new) swaps if x==old, returns success
 // - atomic.Value can store and load arbitrary values atomically
-// - Atomics don't provide ordering guarantees beyond the single variable
+// - Go 1.19+ CLARIFICATION: Atomics DO provide synchronization. If atomic
+//   operation A is sequenced-before B, and B is observed by C, then A
+//   happens-before C. This allows using atomics for synchronization patterns.
+// - Go 1.19+ also added atomic.Int64, atomic.Pointer[T], etc. (type-safe)
 //
 // =============================================================================
 
@@ -176,10 +179,16 @@ func (s *SpinLock) Unlock() {
 
 // LockFreeStack is a stack that uses CAS for thread-safety.
 //
-// TODO: Implement using atomic.Pointer (Go 1.19+) or atomic.Value
+// TODO: Implement using atomic.Pointer[T] (Go 1.19+) or atomic.Value
 // - Push should atomically add to top
 // - Pop should atomically remove from top
 // - Both should use CAS loops
+//
+// HINT: atomic.Pointer[T] is cleaner than atomic.Value for typed pointers:
+//   var head atomic.Pointer[Node]
+//   head.Store(newNode)
+//   current := head.Load()
+//   head.CompareAndSwap(old, new)
 //
 // HINT: Stack node contains value and pointer to next node
 type LockFreeStack struct {
