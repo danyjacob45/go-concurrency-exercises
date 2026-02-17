@@ -18,9 +18,9 @@ import (
 // - Closed channels are always ready to receive (return zero value)
 // - time.After returns a channel that receives after a duration
 //
-// IMPORTANT: time.After creates a timer that isn't garbage collected until
-// it fires. In loops, this can waste resources. Prefer time.NewTimer with
-// explicit Stop() for better resource management. See exercise 01 challenge.
+// NOTE: Before Go 1.23, time.After created timers that weren't garbage
+// collected until they fired, causing leaks in loops. Since Go 1.23,
+// unreferenced timers are collected even if they haven't fired.
 //
 // =============================================================================
 

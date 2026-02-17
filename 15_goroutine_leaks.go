@@ -162,16 +162,17 @@ func GenerateWithLimit(ctx context.Context, values []int, maxCount int) <-chan i
 // PART 5: Leak from Timer/Ticker
 // =============================================================================
 
-// LeakyTimer demonstrates resource waste with time.After.
+// LeakyTimer demonstrates resource waste with time.After (pre-Go 1.23).
 //
-// CLARIFICATION: time.After doesn't actually create a goroutine that leaks
-// forever. It creates an internal timer that will fire after the duration,
-// then be garbage collected. However:
-// 1. The timer resources (memory, runtime timer) aren't freed until it fires
-// 2. In hot loops, this can create thousands of pending timers
-// 3. This is resource waste, not a permanent leak
+// CLARIFICATION: Since Go 1.23, unreferenced timers are garbage collected
+// even if they haven't fired, so time.After no longer causes resource waste.
 //
-// Use time.NewTimer with explicit Stop() for better resource management.
+// In Go < 1.23, the timer resources (memory, runtime timer) weren't freed
+// until the timer fired, so hot loops could accumulate thousands of pending
+// timers. Using time.NewTimer with Stop() was essential in those versions.
+//
+// This exercise is kept for historical context and because explicit cleanup
+// with time.NewTimer is still considered good practice.
 func LeakyTimer() string {
 	ch := make(chan string)
 
@@ -186,8 +187,8 @@ func LeakyTimer() string {
 		return result
 	case <-time.After(100 * time.Millisecond):
 		return "timeout"
-		// RESOURCE WASTE: timer resources held until it would have fired
-		// In loops, this accumulates. Use time.NewTimer + Stop() instead.
+		// Pre-Go 1.23: timer resources held until it would have fired.
+		// Since Go 1.23: unreferenced timers are garbage collected.
 	}
 }
 

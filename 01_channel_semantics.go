@@ -130,7 +130,8 @@ func ChannelDirectionDemo(count int) int {
 // Returns true if send succeeded, false if timeout occurred.
 //
 // TODO: Implement WITHOUT using time.After (use time.NewTimer instead)
-// This is important because time.After leaks memory if the timeout isn't reached!
+// Note: Go 1.23+ garbage collects unreferenced timers even if they haven't
+// fired, but using time.NewTimer with Stop() is still good practice.
 //
 // HINT: time.NewTimer returns a *Timer with a channel C and method Stop()
 func SendWithTimeout(ch chan<- int, value int, timeout time.Duration) bool {
