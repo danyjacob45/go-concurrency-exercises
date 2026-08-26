@@ -3,6 +3,7 @@ package concurrency
 import (
 	"sync"
 	"testing"
+	"time"
 )
 
 // =============================================================================
@@ -250,6 +251,50 @@ func TestSafeSlice_Concurrent(t *testing.T) {
 }
 
 // --- Conceptual tests ---
+
+// =============================================================================
+// CHALLENGE: Implement a Read-Write cache with expiration
+// =============================================================================
+
+func TestExpiringCache(t *testing.T) {
+	// Initialize cache with a tiny 50-millisecond TTL
+	cache := NewExpiringCache(50 * time.Millisecond)
+
+	// Test 1: Standard Set and Get
+	cache.Set(1, "system_data")
+	val, ok := cache.Get(1)
+	if !ok || val != "system_data" {
+		t.Errorf("Expected to get 'system_data', got '%v', ok: %v", val, ok)
+	}
+
+	// Test 2: Wait for expiration
+	time.Sleep(100 * time.Millisecond) // Wait longer than TTL
+	val, ok = cache.Get(1)
+	if ok {
+		t.Errorf("Expected entry to be expired (false), but got true with value: %s", val)
+	}
+
+	// Test 3: CleanExpired functionality
+	cache.Set(2, "temp_data")
+	cache.Set(3, "keep_data") // Set both
+
+	// Fast forward time by sleeping
+	time.Sleep(100 * time.Millisecond)
+
+	// Add a fresh one
+	cache.Set(4, "fresh_data")
+
+	// Trigger the cleanup
+	cache.CleanExpired()
+
+	// 2 and 3 should be dead, 4 should survive
+	if _, ok := cache.Get(2); ok {
+		t.Errorf("Key 2 should have been purged by CleanExpired")
+	}
+	if val, ok := cache.Get(4); !ok || val != "fresh_data" {
+		t.Errorf("Key 4 was fresh and should survive CleanExpired, got: %v", val)
+	}
+}
 
 func TestMutexConcept_RWMutex(t *testing.T) {
 	t.Log("CONCEPT: RWMutex allows multiple concurrent readers OR one exclusive writer")
