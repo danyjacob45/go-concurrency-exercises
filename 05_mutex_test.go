@@ -250,6 +250,75 @@ func TestSafeSlice_Concurrent(t *testing.T) {
 	}
 }
 
+// --- CHALLENGE PROBLEM: ExpiringCache ---
+
+func TestExpiringCache_Basic(t *testing.T) {
+	ttl := 50 * time.Millisecond
+	c := NewExpiringCache(ttl)
+	if c == nil {
+		t.Fatal("NewExpiringCache returned nil")
+	}
+
+	// 1. Test standard Set and Get
+	c.Set(1, "Linux")
+	val, ok := c.Get(1)
+	if !ok || val != "Linux" {
+		t.Errorf("Get(1) = (%q, %v); want (\"Linux\", true)", val, ok)
+	}
+
+	// 2. Test Lazy Eviction (Wait for expiration)
+	time.Sleep(100 * time.Millisecond)
+	_, ok = c.Get(1)
+	if ok {
+		t.Error("Get(1) returned true after TTL expired; want false (Lazy Eviction failed)")
+	}
+}
+
+func TestExpiringCache_CleanExpired(t *testing.T) {
+	ttl := 50 * time.Millisecond
+	c := NewExpiringCache(ttl)
+
+	// Add multiple items
+	c.Set(1, "A")
+	c.Set(2, "B")
+	c.Set(3, "C")
+
+	// Wait for all to expire
+	time.Sleep(100 * time.Millisecond)
+
+	// Trigger bulk cleanup
+	c.CleanExpired()
+
+	// Verify items are inaccessible
+	if _, ok := c.Get(1); ok {
+		t.Error("Item 1 survived CleanExpired")
+	}
+	if _, ok := c.Get(2); ok {
+		t.Error("Item 2 survived CleanExpired")
+	}
+}
+
+func TestExpiringCache_Concurrent(t *testing.T) {
+	ttl := 100 * time.Millisecond
+	c := NewExpiringCache(ttl)
+	var wg sync.WaitGroup
+
+	// Concurrently Set, Get, and Clean to trigger Race Detector if locks are missing
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func(val int) {
+			defer wg.Done()
+			c.Set(val, "Data")
+			c.Get(val)
+			if val%10 == 0 { // Occasional bulk clean
+				c.CleanExpired()
+			}
+		}(i)
+	}
+	wg.Wait()
+	// If the Go race detector (-race flag) doesn't panic, this passes.
+}
+
 // --- Conceptual tests ---
 
 // =============================================================================
@@ -299,4 +368,10 @@ func TestExpiringCache(t *testing.T) {
 func TestMutexConcept_RWMutex(t *testing.T) {
 	t.Log("CONCEPT: RWMutex allows multiple concurrent readers OR one exclusive writer")
 	t.Log("         Use for read-heavy workloads where reads outnumber writes")
+}
+
+func TestExpiringCacheConcept(t *testing.T) {
+	t.Log("CONCEPT: Lazy Eviction vs Bulk Cleanup in memory management.")
+	t.Log("         Lazy Eviction deletes expired items on the fly during a Get() call, keeping reads fast.")
+	t.Log("         CleanExpired() acts as a Garbage Collector, sweeping the map to remove dead items that are never accessed again.")
 }
