@@ -2,6 +2,7 @@ package concurrency
 
 import (
 	"sync"
+	"time"
 )
 
 // =============================================================================
@@ -186,10 +187,15 @@ type ExpiringCache struct {
 }
 
 // NewExpiringCache creates a cache with given TTL for entries.
-// func NewExpiringCache(ttl time.Duration) *ExpiringCache {
-// 	// YOUR CODE HERE
-// 	return nil
-// }
+func NewExpiringCache(ttl time.Duration) *ExpiringCache {
+    return nil // TODO: implement
+}
+
+func (c *ExpiringCache) Set(key int, value string) {}
+
+func (c *ExpiringCache) Get(key int) (string, bool) { return "", false }
+
+func (c *ExpiringCache) CleanExpired() {}
 
 // Ensure sync import is used
 var _ = sync.Mutex{}
